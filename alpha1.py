@@ -9,7 +9,7 @@ import urllib
 ir1 = 8
 istripped = 0
 
-comms = Arduino("COM4")
+comms = Arduino("COM")
 comms.digital[ir1].mode = pyfirmata.INPUT
 
 def ir_start(ir1):
