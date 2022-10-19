@@ -1,8 +1,45 @@
 import cv2
 import numpy as np
 
+from twilio.rest import Client
+
+# import urllib.request
+# import requests
+
 ################################# LIBS ABOVE #############
 frame = cv2.VideoCapture(0)
+tripped = 0
+
+# def cloud_pull():
+
+# 	URL='https://api.thingspeak.com/channels/1596814/fields/1.json?api_key='
+# 	KEY='8HMKSPCLNMVG7EAH'
+# 	HEADER='&results=2'
+# 	NEW_URL=URL+KEY+HEADER
+
+# 	get_data = requests.get(NEW_URL).json()
+
+# 	fetched_data = get_data['feeds']
+   
+# 	cloud_db = []
+# 	timestamp_db = []
+
+# 	for x in fetched_data:
+# 		cloud_db.append(x['field1'])
+# 		timestamp_db.append(x['created_at'])
+
+# def cloud_push():
+
+# 	global tripped
+
+# 	URL = 'https://api.thingspeak.com/update?api_key='
+# 	KEY = 'S7Z35PBVKENP386F'
+# 	HEADER = '&field1={}'.format(tripped)
+# 	new_URL = URL + KEY + HEADER
+
+# 	pushed_url = urllib.request.urlopen(new_URL)
+# 	print(pushed_url)
+
 
 def calc_dist(cx1,cy1,cx2,cy2):
 
@@ -34,7 +71,7 @@ while(True):
         roi_color = feed[y:y+h, x:x+w]
 
     red_ub = np.array([179,255,255],np.uint8)
-    red_lb = np.array([0,128,107],np.uint8)
+    red_lb = np.array([91,115,94],np.uint8)
     red_mask= cv2.inRange(hsv1,red_lb,red_ub)	#ub- upper bound, lb- lower bound
 
     kernel=np.ones((15,15),"uint8")
@@ -71,6 +108,16 @@ while(True):
  
     euclidian_dist = calc_dist(cx_face,cy_face,cx_red,cy_red)
     print("Inter object distance:",euclidian_dist)
+    account_sid="ACeea55aea688a7f9ffefbf097f844f695"
+    auth_token="05fda805f8240b7345ebcb3637c288db"
+
+    client=Client(account_sid,auth_token)
+
+    message=client.messages.create(
+        body=" ALERT: You left your red ball behind !!",
+        from_="+13464722678",
+        to="+917892000892"
+    )
        
     cv2.imshow("main window",feed)
     if cv2.waitKey(1) == ord('q'):
