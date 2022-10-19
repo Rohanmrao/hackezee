@@ -1,6 +1,65 @@
 import cv2
 import numpy as np
 
+################################# LIBS ABOVE #############
+from pyfirmata import Arduino
+import pyfirmata
+import urllib
+
+ir1 = 8
+istripped = 0
+
+comms = Arduino("COM4")
+comms.digital[ir1].mode = pyfirmata.INPUT
+
+def ir_start(ir1):
+
+	global a 
+	it = pyfirmata.util.Iterator(comms)
+	it.start()
+	a = comms.digital[ir1].read()
+	#print(a)
+
+	return a
+
+def trip():
+
+    global istripped
+    global ir1
+
+    if (comms.digital[ir1].read(1)):
+        istripped = 1
+
+    if (comms.digital[ir1].read(0)):
+        istripped = 0
+    
+    return istripped
+    
+def cloud_push():
+
+	global istripped
+
+	URL = 'https://api.thingspeak.com/update?api_key='
+	KEY = 'S7Z35PBVKENP386F'
+	HEADER = '&field1={}'.format(istripped)
+	new_URL = URL + KEY + HEADER
+
+	pushed_url = urllib.request.urlopen(new_URL)
+	print(pushed_url)
+	
+
+#######################################################################################
+# Write api key =  S7Z35PBVKENP386F
+# read api key =  8HMKSPCLNMVG7EAH
+#######################################################################################
+
+################################# INITS BELOW ############
+ir1 = 8
+comms = Arduino("COM4")
+comms.digital[ir1].mode = pyfirmata.INPUT
+
+istripped = 0
+
 frame = cv2.VideoCapture(0)
 
 def calc_dist(cx1,cy1,cx2,cy2):
@@ -9,6 +68,10 @@ def calc_dist(cx1,cy1,cx2,cy2):
         return ((cy2 - cy1)**2 + (cx2 - cx1)**2)**0.5
 
 while(True):    
+
+    ir_value = ir_start(ir1)
+
+    tripvalue = trip(istripped,ir1)
 
     cx_red = 0
     cy_red = 0
@@ -43,8 +106,6 @@ while(True):
     #dilation effects go below- 
     #red
     red_mask = cv2.dilate(red_mask,kernel)
-    #bottle
- 
 
     #contour to track below- 
     contours, hierarchy = cv2.findContours(red_mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
