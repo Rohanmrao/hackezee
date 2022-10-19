@@ -1,45 +1,55 @@
 import cv2
 import numpy as np
 
+import time 
+import datetime
 from twilio.rest import Client
 
-# import urllib.request
-# import requests
 
+fin = 0
+
+def twilioman():
+    global fin 
+    account_sid="ACeea55aea688a7f9ffefbf097f844f695"
+    auth_token="1707bde97e99e222af889038b181e0ec"
+    client=Client(account_sid,auth_token)
+    message=client.messages.create(body=" ALERT: You left your red ball behind !!",from_="+13464722678",to="+917892000892")
+    print("ALERT : RED BALL LEFT BEHIND !!")
+    fin = 1
+
+
+def countdown(h, m, s,cx_face,cy_face):
+ 
+    # Calculate the total number of seconds
+    total_seconds = h * 3600 + m * 60 + s
+ 
+    # While loop that checks if total_seconds reaches zero
+    # If not zero, decrement total time by one second
+    while (total_seconds > 0):
+ 
+        # Timer represents time left on countdown
+        timer = datetime.timedelta(seconds = total_seconds)
+        
+        # Prints the time left on the timer
+        print(timer, end="\r")
+ 
+        # Delays the program one second
+        time.sleep(1)
+ 
+ 
+        # Reduces total time by one second
+        total_seconds -= 1
+
+        if(cx_face or cy_face != 0):
+            break
+        
+    print("Countdown finished")
+    twilioman()
+
+from twilio.rest import Client
 ################################# LIBS ABOVE #############
-frame = cv2.VideoCapture(0)
+frame = cv2.VideoCapture(1)
 tripped = 0
-
-# def cloud_pull():
-
-# 	URL='https://api.thingspeak.com/channels/1596814/fields/1.json?api_key='
-# 	KEY='8HMKSPCLNMVG7EAH'
-# 	HEADER='&results=2'
-# 	NEW_URL=URL+KEY+HEADER
-
-# 	get_data = requests.get(NEW_URL).json()
-
-# 	fetched_data = get_data['feeds']
-   
-# 	cloud_db = []
-# 	timestamp_db = []
-
-# 	for x in fetched_data:
-# 		cloud_db.append(x['field1'])
-# 		timestamp_db.append(x['created_at'])
-
-# def cloud_push():
-
-# 	global tripped
-
-# 	URL = 'https://api.thingspeak.com/update?api_key='
-# 	KEY = 'S7Z35PBVKENP386F'
-# 	HEADER = '&field1={}'.format(tripped)
-# 	new_URL = URL + KEY + HEADER
-
-# 	pushed_url = urllib.request.urlopen(new_URL)
-# 	print(pushed_url)
-
 
 def calc_dist(cx1,cy1,cx2,cy2):
 
@@ -47,7 +57,7 @@ def calc_dist(cx1,cy1,cx2,cy2):
         return ((cy2 - cy1)**2 + (cx2 - cx1)**2)**0.5
 
 while(True):    
-
+    alerted = 0
     cx_red = 0
     cy_red = 0
     cx_face = 0
@@ -89,9 +99,9 @@ while(True):
 
         area = cv2.contourArea(contour)
         M_red = cv2.moments(thresh_red)
-        if(area > 8000):
+        if(area > 5000):
             
-            if M_red["m00"] != 0:
+            if M_red["m00"] != 0 :
                 cx_red = int(M_red["m10"] / M_red["m00"])
                 cy_red = int(M_red["m01"] / M_red["m00"])
 
@@ -108,16 +118,11 @@ while(True):
  
     euclidian_dist = calc_dist(cx_face,cy_face,cx_red,cy_red)
     print("Inter object distance:",euclidian_dist)
-    account_sid="ACeea55aea688a7f9ffefbf097f844f695"
-    auth_token="05fda805f8240b7345ebcb3637c288db"
-
-    client=Client(account_sid,auth_token)
-
-    message=client.messages.create(
-        body=" ALERT: You left your red ball behind !!",
-        from_="+13464722678",
-        to="+917892000892"
-    )
+   
+    if(euclidian_dist > 320):
+        countdown(0,0,15,cx_face,cy_face)
+        if(fin):
+            break
        
     cv2.imshow("main window",feed)
     if cv2.waitKey(1) == ord('q'):
