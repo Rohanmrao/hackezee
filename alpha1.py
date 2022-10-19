@@ -6,46 +6,42 @@ from pyfirmata import Arduino
 import pyfirmata
 import urllib
 
-ir1 = 8
-istripped = 0
+# ir1 = 8
+# istripped = 0
 
-comms = Arduino("COM")
-comms.digital[ir1].mode = pyfirmata.INPUT
+# irvalue = 0
 
-def ir_start(ir1):
+# comms = Arduino("COM4")
+# comms.digital[ir1].mode = pyfirmata.INPUT
+# print("Started Firmata Comms... Version:",comms.get_firmata_version())
 
-	global a 
-	it = pyfirmata.util.Iterator(comms)
-	it.start()
-	a = comms.digital[ir1].read()
-	#print(a)
+# def ir_start():
 
-	return a
+# 	global irvalue
+# 	it = pyfirmata.util.Iterator(comms)
+# 	it.start()
+# 	irvalue = comms.digital[ir1].read()
 
-def trip():
+# def trip():
 
-    global istripped
-    global ir1
+#     global istripped
+#     global ir1
 
-    if (comms.digital[ir1].read(1)):
-        istripped = 1
+#     if (comms.digital[ir1].read(1)):
+#         istripped = 1
 
-    if (comms.digital[ir1].read(0)):
-        istripped = 0
+#     if (comms.digital[ir1].read(0)):
+#         istripped = 0
     
-    return istripped
-    
-def cloud_push():
+# def cloud_push(data):
 
-	global istripped
+# 	URL = 'https://api.thingspeak.com/update?api_key='
+# 	KEY = 'S7Z35PBVKENP386F'
+# 	HEADER = '&field1={}'.format(data)
+# 	new_URL = URL + KEY + HEADER
 
-	URL = 'https://api.thingspeak.com/update?api_key='
-	KEY = 'S7Z35PBVKENP386F'
-	HEADER = '&field1={}'.format(istripped)
-	new_URL = URL + KEY + HEADER
-
-	pushed_url = urllib.request.urlopen(new_URL)
-	print(pushed_url)
+# 	pushed_url = urllib.request.urlopen(new_URL)
+# 	print(pushed_url)
 	
 
 #######################################################################################
@@ -55,7 +51,7 @@ def cloud_push():
 
 ################################# INITS BELOW ############
 ir1 = 8
-comms = Arduino("COM4")
+comms = Arduino('COM5')
 comms.digital[ir1].mode = pyfirmata.INPUT
 
 istripped = 0
@@ -69,9 +65,8 @@ def calc_dist(cx1,cy1,cx2,cy2):
 
 while(True):    
 
-    ir_value = ir_start(ir1)
-
-    tripvalue = trip(istripped,ir1)
+    # ir_start()
+    # trip()
 
     cx_red = 0
     cy_red = 0
@@ -133,6 +128,9 @@ while(True):
  
     euclidian_dist = calc_dist(cx_face,cy_face,cx_red,cy_red)
     print("Inter object distance:",euclidian_dist)
+
+    # if (istripped):
+    #     cloud_push(euclidian_dist)
        
     cv2.imshow("main window",feed)
     if cv2.waitKey(1) == ord('q'):
