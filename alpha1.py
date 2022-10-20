@@ -10,10 +10,10 @@ fin = 0
 
 def twilioman():
     global fin 
-    account_sid="ACeea55aea688a7f9ffefbf097f844f695"
-    auth_token="1707bde97e99e222af889038b181e0ec"
+    account_sid=""
+    auth_token=""
     client=Client(account_sid,auth_token)
-    message=client.messages.create(body=" ALERT: You left your red ball behind !!",from_="+13464722678",to="+917892000892")
+    message=client.messages.create(body=" ALERT: You left your red ball behind !!",from_="+13464722678",to="")
     print("ALERT : RED BALL LEFT BEHIND !!")
     fin = 1
 
